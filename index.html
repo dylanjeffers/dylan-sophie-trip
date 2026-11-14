@@ -14,7 +14,7 @@
 #app{display:grid;grid-template-rows:auto auto 1fr auto;height:100dvh}
 header{display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top) + 10px) 16px 8px}
 header h1{font-size:19px;margin:0;letter-spacing:-.2px}header p{margin:1px 0 0;color:var(--mute);font-size:13px}
-header .t{flex:1;min-width:0}
+header .t{flex:1;min-width:0}@media(max-width:520px){#loc{padding:8px 10px}#add{padding:9px 12px}}
 #add{border:0;background:var(--acc);color:#fff;font-weight:600;font-size:14px;padding:9px 14px;border-radius:999px;cursor:pointer;white-space:nowrap}
 #chips{display:flex;gap:6px;overflow-x:auto;padding:4px 16px 10px;scrollbar-width:none}#chips::-webkit-scrollbar{display:none}
 .chip{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;color:var(--ink)}
@@ -41,11 +41,15 @@ header .t{flex:1;min-width:0}
 #viewer .ed{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}#viewer .ed button{background:#3a322c;border:0;color:#fff;border-radius:8px;padding:7px 11px;font-size:13px;cursor:pointer}
 #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;z-index:3000;max-width:90vw;text-align:center}
 .empty{color:var(--mute);font-size:13px;margin:6px 0 10px}
+#loc{border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:13px;padding:8px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}#loc.on{background:#2fa36b;border-color:#2fa36b;color:#fff}#loc[hidden]{display:none}
+#seen{font-size:13px;color:var(--ink);margin-top:2px;cursor:pointer}#seen:empty{display:none}#seen b{color:#2fa36b}
+.me{position:relative;width:40px;height:40px}.me i{position:absolute;inset:0;border-radius:50%;background:rgba(47,163,107,.25);animation:pulse 2s ease-out infinite}.me span{position:absolute;inset:6px;border-radius:50%;background:#2fa36b;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.45);color:#fff;display:grid;place-items:center;font:700 13px/1 -apple-system,sans-serif}.me.old span{background:#8a9a92}.me.old i{display:none}
+@keyframes pulse{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.6);opacity:0}}
 </style>
 </head>
 <body>
 <div id="app">
-<header><div class="t"><h1>Dylan &amp; Sophie</h1><p id="sub">Spain + Nice · Nov 14–29, 2026</p></div><button id="add">＋ Photos</button></header>
+<header><div class="t"><h1>Dylan &amp; Sophie</h1><p id="sub">Spain + Nice · Nov 14–29, 2026</p><div id="seen"></div></div><button id="loc" hidden>📍 Share location</button><button id="add">＋ Photos</button></header>
 <nav id="chips"></nav>
 <div id="map"></div>
 <section id="panel"></section>
@@ -147,16 +151,34 @@ async function uploadOne(f){const ex=await loadExifr();let tags={},gps=null;
   let lat=null,lng=null,approx=false;if(gps&&isFinite(gps.latitude)&&isFinite(gps.longitude)&&(gps.latitude||gps.longitude)){lat=+gps.latitude.toFixed(6);lng=+gps.longitude.toFixed(6)}else{const g=guess(taken);if(g){lat=g.lat;lng=g.lng;approx=true}}
   await saveMeta({id,full:fu,thumb:tu,w:full.w,h:full.h,taken,lat,lng,approx,caption:'',by:who(),added:new Date().toISOString()});return approx}
 $('#add').onclick=()=>{if(!pass()){const p=prompt('Upload passcode (Dylan and Sophie only)');if(!p)return;localStorage.setItem('tp',p.trim())}
-  if(!localStorage.getItem('tw')){const w=prompt('Your name, shown on your photos','');localStorage.setItem('tw',(w||'').trim())}$('#file').click()};
+  if(!localStorage.getItem('tw')){const w=prompt('Your name, shown on your photos','');localStorage.setItem('tw',(w||'').trim())}locBtn();$('#file').click()};
 $('#file').onchange=async e=>{const fs=[...e.target.files];e.target.value='';if(!fs.length)return;let ok=0,ap=0;
   for(const[i,f]of fs.entries()){toast(`Uploading ${i+1} of ${fs.length}…`);try{if(await uploadOne(f))ap++;ok++}catch(err){console.error(err);if(err.status===401){localStorage.removeItem('tp');toast('Wrong passcode. Tap ＋ Photos to try again.',4000);break}}}
   if(ok){toast(`${ok} photo${ok===1?'':'s'} added`+(ap?` (${ap} placed at the nearest planned stop; open one and tap Move pin to fix)`:''),5000);await refresh(true)}
   else if(pass())toast('Upload failed. Check your connection and try again.',4000)};
 
+const meL=L.layerGroup().addTo(map);let LOCS=[];
+const ago=t=>{const m=Math.round((Date.now()-Date.parse(t))/60000);if(m<1)return'just now';if(m<60)return m+' min ago';const h=Math.round(m/60);return h<24?h+' hr ago':Math.round(h/24)+' days ago'};
+function placeName(l){let best=null,bd=1e9;for(const s of D.stops){if(s.lat==null)continue;const d=map.distance([l.lat,l.lng],[s.lat,s.lng]);if(d<bd){bd=d;best=s}}if(!best)return'';if(bd<500)return'near '+best.title;const day=D.days.find(d=>d.id===best.day);return bd<30000&&day?'in '+day.city.split(' → ').pop():''}
+function renderLocs(){meL.clearLayers();const fresh=LOCS.filter(l=>Date.now()-Date.parse(l.at)<36*3600e3).sort((a,b)=>b.at.localeCompare(a.at));
+  for(const l of fresh){const old=Date.now()-Date.parse(l.at)>3*3600e3;L.marker([l.lat,l.lng],{zIndexOffset:2000,icon:L.divIcon({className:'',html:`<div class="me${old?' old':''}"><i></i><span>${esc((l.by||'?')[0])}</span></div>`,iconSize:[40,40],iconAnchor:[20,20]})}).bindPopup(`<b>${esc(l.by)}</b><div class="ar">${ago(l.at)} · ${esc(placeName(l))}</div>`).addTo(meL)}
+  const top=fresh[0];$('#seen').innerHTML=top?`<b>●</b> Last seen ${esc(placeName(top)||'on the map')} · ${ago(top.at)}`:''}
+$('#seen').onclick=()=>{const top=LOCS.slice().sort((a,b)=>b.at.localeCompare(a.at))[0];if(top)map.flyTo([top.lat,top.lng],15)};
+async function loadLocs(){try{const r=await fetch('/api/location?ts='+Date.now());if(r.ok){LOCS=await r.json();renderLocs()}}catch{}}
+const sharing=()=>localStorage.getItem('tl')==='1';
+function locBtn(){const b=$('#loc');b.hidden=!pass();b.classList.toggle('on',sharing());b.textContent=sharing()?'📍 Sharing':'📍 Share location'}
+let lastSent=0;
+function sendLoc(force){if(!sharing()||!pass()||!navigator.geolocation)return;if(!force&&Date.now()-lastSent<120000)return;lastSent=Date.now();
+  navigator.geolocation.getCurrentPosition(async p=>{try{const r=await fetch('/api/location',{method:'POST',headers:{'x-passcode':pass(),'content-type':'application/json'},body:JSON.stringify({lat:p.coords.latitude,lng:p.coords.longitude,by:who()||'Us',src:'web'})});if(r.ok){await loadLocs();if(force)toast('Location shared',2000)}else if(r.status===401){toast('Wrong passcode',3000)}}catch{}},
+   e=>{if(force)toast(e.code===1?'Location permission is off for this site. Allow it in Settings › Safari › Location.':'Could not get your location.',5000)},{enableHighAccuracy:false,maximumAge:120000,timeout:20000})}
+$('#loc').onclick=()=>{if(sharing()){localStorage.setItem('tl','0');locBtn();toast('Stopped sharing from this phone',2500);return}
+  if(!who()){const w=prompt('Your name, shown on the map','');if(!w)return;localStorage.setItem('tw',w.trim())}
+  localStorage.setItem('tl','1');locBtn();sendLoc(true)};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){sendLoc(false);loadLocs()}});
 async function refresh(fit){try{const r=await fetch('/api/photos?ts='+Date.now());if(r.ok){P=(await r.json()).sort((a,b)=>a.taken.localeCompare(b.taken))}}catch{}render(fit)}
 async function init(){D=await fetch('/stops.json?ts='+Date.now()).then(r=>r.json());
   const h=location.hash.slice(1),tc=chipFor(madridToday());cur=D.days.some(d=>d.id===h)?h:(tc&&madridToday()>='2026-11-15'?tc:'all');
-  chips();await refresh(true);setInterval(async()=>{if(document.visibilityState!=='visible'||!$('#viewer').hidden)return;const before=P.map(p=>p.id+p.lat+p.caption).join();try{const r=await fetch('/api/photos?ts='+Date.now());if(!r.ok)return;const np=(await r.json()).sort((a,b)=>a.taken.localeCompare(b.taken));if(np.map(p=>p.id+p.lat+p.caption).join()!==before){P=np;render(false)}}catch{}},60000)}
+  chips();locBtn();await refresh(true);loadLocs();sendLoc(false);setInterval(()=>{loadLocs();sendLoc(false)},60000);setInterval(async()=>{if(document.visibilityState!=='visible'||!$('#viewer').hidden)return;const before=P.map(p=>p.id+p.lat+p.caption).join();try{const r=await fetch('/api/photos?ts='+Date.now());if(!r.ok)return;const np=(await r.json()).sort((a,b)=>a.taken.localeCompare(b.taken));if(np.map(p=>p.id+p.lat+p.caption).join()!==before){P=np;render(false)}}catch{}},60000)}
 init();
 </script>
 </body>
