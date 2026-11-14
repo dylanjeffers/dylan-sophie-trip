@@ -1,5 +1,4 @@
-{"updated":"2026-11-14","days":[
-{"id":"2026-11-14","label":"Sat 14","city":"Fly to Madrid","summary":"Overnight via Dulles"},
+{"updated":"2026-11-14","days":[{"id":"2026-11-14","label":"Sat 14","city":"Fly to Madrid","summary":"Overnight via Dulles"},
 {"id":"2026-11-15","label":"Sun 15","city":"Madrid","summary":"Rastro, vermut, siesta, Ponzano"},
 {"id":"2026-11-16","label":"Mon 16","city":"Madrid","summary":"Royal Palace, Prado, Reina Sofía, Tasquería dinner"},
 {"id":"2026-11-17","label":"Tue 17","city":"Córdoba → Seville","summary":"Road trip begins: Mezquita, then Seville"},
@@ -10,8 +9,8 @@
 {"id":"2026-11-22","label":"Sun 22","city":"Barcelona","summary":"Park Güell, Sagrada Família, Barça match"},
 {"id":"2026-11-23","label":"Mon 23","city":"Barcelona → Nice","summary":"Last Barcelona day, night flight"},
 {"id":"2026-11-24","label":"Nov 24–28","city":"Nice","summary":"Family time, Thanksgiving Thu 26"},
-{"id":"2026-11-29","label":"Sun 29","city":"Fly home","summary":"Nice → Zürich → LAX"}
-],"stops":[
+{"id":"2026-11-29","label":"Sun 29","city":"Fly home","summary":"Nice → Los Angeles"}],
+"stops":[
 {"id":"11-14-ua2268-lax-washington-dulles","day":"2026-11-14","sort":0,"time":"08:25","kind":"flight","title":"Los Angeles → Washington Dulles","area":"United UA2268","note":"","lat":null,"lng":null},
 {"id":"11-14-ua260-dulles-madrid","day":"2026-11-14","sort":1,"time":"18:10","kind":"flight","title":"Dulles → Madrid (overnight)","area":"United UA260","note":"Lands in Madrid 7:45 AM Sunday.","lat":null,"lng":null},
 {"id":"11-15-land-at-madrid-barajas","day":"2026-11-15","sort":2,"time":"07:45","kind":"flight","title":"Land in Madrid","area":"Madrid-Barajas airport","note":"","lat":40.4936,"lng":-3.5668},
@@ -63,6 +62,5 @@
 {"id":"11-23-land-at-nice-cote-d-azur","day":"2026-11-23","sort":65,"time":"22:35","kind":"flight","title":"Land in Nice","area":"Nice airport","note":"","lat":43.6584,"lng":7.2159},
 {"id":"11-23-hotel-gounod","day":"2026-11-23","sort":65.5,"time":"23:15","kind":"stay","title":"Hotel in Nice (1 night)","area":"Nice center","note":"","lat":43.699,"lng":7.26},
 {"id":"11-24-family-time-in-nice","day":"2026-11-24","sort":66,"time":"","kind":"stay","title":"Family time in Nice","area":"Nice","note":"Through Saturday Nov 28. Thanksgiving is Thursday Nov 26.","lat":43.7009,"lng":7.2683},
-{"id":"11-29-lx563-nice-zurich","day":"2026-11-29","sort":67,"time":"09:45","kind":"flight","title":"Fly Nice → Zürich","area":"Nice airport","note":"","lat":43.6584,"lng":7.2159},
-{"id":"11-29-lx40-zurich-lax","day":"2026-11-29","sort":68,"time":"13:10","kind":"flight","title":"Fly Zürich → Los Angeles","area":"Zürich airport","note":"Lands at LAX 4:35 PM.","lat":47.4582,"lng":8.5555}
-]}
+{"id":"11-29-lx563-nice-zurich","day":"2026-11-29","sort":67,"time":"09:45","kind":"flight","title":"Fly home from Nice","area":"Nice airport","note":"","lat":43.6584,"lng":7.2159},
+{"id":"11-29-lx40-zurich-lax","day":"2026-11-29","sort":68,"time":"13:10","kind":"flight","title":"Fly home to Los Angeles","area":"Via Zürich","note":"Lands at LAX 4:35 PM.","lat":null,"lng":null}]}
