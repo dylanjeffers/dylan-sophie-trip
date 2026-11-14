@@ -28,9 +28,9 @@ header .t{flex:1;min-width:0}
 .st .tm{color:var(--mute);font-size:13px;padding-top:2px}.st .ic{width:24px;height:24px;border-radius:50%;color:#fff;display:grid;place-items:center;font-size:12px}
 .st b{font-weight:600}.st .ar{color:var(--mute);font-size:13px}.st .nt{grid-column:3;font-size:13px;color:#4a403a}
 .dc{padding:10px 0;border-top:1px solid var(--line);cursor:pointer;display:flex;gap:10px;align-items:center}.dc .l{width:72px;font-weight:600;font-size:13px}.dc .c{flex:1}.dc .c div{color:var(--mute);font-size:13px}.dc .n{color:var(--acc);font-size:12px;white-space:nowrap}
-.pin{width:26px;height:26px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);color:#fff;display:grid;place-items:center;font:600 12px/1 -apple-system,sans-serif}
-.pin.sm{width:14px;height:14px;font-size:0}
-.ph{width:46px;height:46px;border-radius:9px;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);overflow:hidden;background:#ddd}.ph img{width:100%;height:100%;object-fit:cover;display:block}.ph.ap{border-style:dashed}
+.pin{width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.45);color:#fff;display:grid;place-items:center;font:700 15px/1 -apple-system,sans-serif}
+.pin.sm{width:20px;height:20px;border-width:3px;font-size:0}
+.ph{width:40px;height:40px;border-radius:8px;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);overflow:hidden;background:#ddd}.ph img{width:100%;height:100%;object-fit:cover;display:block}.ph.ap{border-style:dashed}
 .pclu{position:relative}.pclu img{width:52px;height:52px;border-radius:10px;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);object-fit:cover}.pclu b{position:absolute;top:-6px;right:-6px;background:var(--acc);color:#fff;border-radius:999px;font-size:12px;padding:2px 7px;border:2px solid #fff}
 .leaflet-popup-content{margin:10px 12px;font-size:14px}.leaflet-popup-content .ar{color:var(--mute);font-size:12px}
 #viewer{position:fixed;inset:0;background:rgba(15,12,10,.94);z-index:2000;display:flex;flex-direction:column;color:#fff}
@@ -64,7 +64,10 @@ let D={days:[],stops:[]},P=[],cur='all',vi=[],vix=0;
 
 const map=L.map('map',{zoomControl:false,attributionControl:true}).setView([40,0],5);
 L.control.zoom({position:'topright'}).addTo(map);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+map.createPane('labels');map.getPane('labels').style.zIndex=450;map.getPane('labels').style.pointerEvents='none';
+const ESRI='https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/';
+L.tileLayer(ESRI+'World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxNativeZoom:16,maxZoom:19,attribution:'Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors'}).addTo(map);
+L.tileLayer(ESRI+'World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{maxNativeZoom:16,maxZoom:19,pane:'labels',opacity:.85}).addTo(map);
 const routeL=L.layerGroup().addTo(map),stopL=L.layerGroup().addTo(map);
 const photoL=L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:45,spiderfyOnMaxZoom:false,zoomToBoundsOnClick:false,
   iconCreateFunction:c=>{const m=c.getAllChildMarkers().map(x=>x.options.p).sort((a,b)=>b.taken.localeCompare(a.taken));return L.divIcon({className:'pclu',html:`<img src="${esc(m[0].thumb)}"><b>${m.length}</b>`,iconSize:[52,52],iconAnchor:[26,26]})}}).addTo(map);
@@ -89,11 +92,11 @@ function render(fit){
   stopL.clearLayers();routeL.clearLayers();photoL.clearLayers();
   const ss=stopsFor(cur),ps=photosFor(cur),pts=[];let n=0;
   const line=ss.filter(s=>s.lat!=null&&(cur!=='all'||s.kind!=='info'));
-  if(line.length>1)L.polyline(line.map(s=>[s.lat,s.lng]),{color:'#c4532d',weight:cur==='all'?2:3,opacity:.55,dashArray:'6 6'}).addTo(routeL);
+  if(line.length>1)L.polyline(line.map(s=>[s.lat,s.lng]),{color:'#c4532d',weight:cur==='all'?3:4,opacity:.8,dashArray:'2 8',lineCap:'round'}).addTo(routeL);
   for(const s of ss){if(s.lat==null)continue;n++;const[c,ic]=kc(s.kind);const all=cur==='all';
-    const m=L.marker([s.lat,s.lng],{icon:L.divIcon({className:'',html:`<div class="pin${all?' sm':''}" style="background:${c}">${all?'':n}</div>`,iconSize:all?[14,14]:[26,26],iconAnchor:all?[7,7]:[13,13]}),zIndexOffset:all?0:500});
+    const m=L.marker([s.lat,s.lng],{icon:L.divIcon({className:'',html:`<div class="pin${all?' sm':''}" style="background:${c}">${all?'':n}</div>`,iconSize:all?[20,20]:[34,34],iconAnchor:all?[10,10]:[17,17]}),zIndexOffset:1000});
     m.bindPopup(`<b>${esc(s.title)}</b><div class="ar">${s.time?fmtT(s.time)+' · ':''}${esc(s.area)}</div>${s.note?`<div style="margin-top:4px">${esc(s.note)}</div>`:''}`);m.addTo(stopL);s._m=m;pts.push([s.lat,s.lng])}
-  for(const p of ps){if(p.lat==null)continue;const m=L.marker([p.lat,p.lng],{p,icon:L.divIcon({className:'',html:`<div class="ph${p.approx?' ap':''}"><img src="${esc(p.thumb)}" loading="lazy"></div>`,iconSize:[46,46],iconAnchor:[23,23]})});
+  for(const p of ps){if(p.lat==null)continue;const m=L.marker([p.lat,p.lng],{p,icon:L.divIcon({className:'',html:`<div class="ph${p.approx?' ap':''}"><img src="${esc(p.thumb)}" loading="lazy"></div>`,iconSize:[40,40],iconAnchor:[20,20]})});
     m.on('click',()=>{const list=photosFor(cur);openViewer(list,list.indexOf(p))});photoL.addLayer(m);pts.push([p.lat,p.lng])}
   if(fit&&pts.length)map.fitBounds(pts,{padding:[30,30],maxZoom:15});
   panel()}
