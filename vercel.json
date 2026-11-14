@@ -1,0 +1,1 @@
+{"headers":[{"source":"/(.*)","headers":[{"key":"X-Robots-Tag","value":"noindex, nofollow"}]},{"source":"/stops.json","headers":[{"key":"Cache-Control","value":"public, max-age=0, s-maxage=60"}]}]}
