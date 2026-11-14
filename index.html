@@ -64,7 +64,7 @@ let D={days:[],stops:[]},P=[],cur='all',vi=[],vix=0;
 
 const map=L.map('map',{zoomControl:false,attributionControl:true}).setView([40,0],5);
 L.control.zoom({position:'topright'}).addTo(map);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>'}).addTo(map);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
 const routeL=L.layerGroup().addTo(map),stopL=L.layerGroup().addTo(map);
 const photoL=L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:45,spiderfyOnMaxZoom:false,zoomToBoundsOnClick:false,
   iconCreateFunction:c=>{const m=c.getAllChildMarkers().map(x=>x.options.p).sort((a,b)=>b.taken.localeCompare(a.taken));return L.divIcon({className:'pclu',html:`<img src="${esc(m[0].thumb)}"><b>${m.length}</b>`,iconSize:[52,52],iconAnchor:[26,26]})}}).addTo(map);
